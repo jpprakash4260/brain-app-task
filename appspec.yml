@@ -1,11 +1,11 @@
 version: 0.0
 Resources:
-  - myApplication:
+  - myApp:
       Type: AWS::EKS::Manifest
       Properties:
-        Name: brain-app-k8s
-        Namespace: default
+        Name: brain-app-manifest
         ClusterName: brain-app-cluster
+        Namespace: default
         ManifestFilePaths:
           - k8s/deployment.yaml
           - k8s/service.yaml
