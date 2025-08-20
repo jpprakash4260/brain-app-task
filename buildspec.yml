@@ -33,15 +33,14 @@ phases:
       - echo "Pushing Docker images to ECR..."
       - docker push $REPO_URI:$IMAGE_TAG
       - docker push $REPO_URI:latest
-
       - echo "Updating kubeconfig..."
       - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME
-
       - echo "Deploying to Kubernetes..."
       - sed -i "s|REPLACE_IMAGE|$REPO_URI:$IMAGE_TAG|g" $K8S_DIR/deployment.yaml
       - kubectl apply -f $K8S_DIR/deployment.yaml
       - kubectl apply -f $K8S_DIR/service.yaml
       - kubectl rollout status deployment/brain-tasks-app
+
 artifacts:
   files:
-    - k8s/*.yaml
+    - k8s/*
