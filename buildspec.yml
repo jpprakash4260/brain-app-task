@@ -33,6 +33,9 @@ phases:
       - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME
 
       - echo "Deploying to Kubernetes..."
+      - aws sts get-caller-identity
+      - kubectl get configmap aws-auth -n kube-system -o yaml
+      - kubectl get cm aws-auth -n kube-system -o yaml
       - sed -i "s|REPLACE_IMAGE|$REPO_URI:$IMAGE_TAG|g" $K8S_DIR/deployment.yml
       - kubectl apply -f $K8S_DIR/deployment.yml --validate=false
       - kubectl apply -f $K8S_DIR/service.yml --validate=false
