@@ -39,6 +39,7 @@ phases:
       - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME
 
       - echo "Deploying to Kubernetes..."
+      - kubectl get svc -o wide
       - sed -i "s|REPLACE_IMAGE|$REPO_URI:$IMAGE_TAG|g" $K8S_DIR/deployment.yml
       - kubectl apply -f $K8S_DIR/deployment.yml
       - kubectl apply -f $K8S_DIR/service.yml
