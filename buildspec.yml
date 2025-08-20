@@ -9,40 +9,40 @@ env:
 
 phases:
   install:
-    runtime-versions:
-      docker: 20
     commands:
-      - "echo Installing dependencies..."
-      - "curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/$(aws eks describe-cluster --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION --query \"cluster.version\" --output text)/2023-07-05/bin/linux/amd64/kubectl"
-      - "chmod +x ./kubectl && mv ./kubectl /usr/local/bin/"
-      - "echo Kubectl installed."
+      - echo "Installing dependencies..."
+      - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/$(aws eks describe-cluster --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION --query "cluster.version" --output text)/2023-07-05/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/
+      - echo "Kubectl installed."
 
   pre_build:
     commands:
-      - "echo Logging into Amazon ECR..."
-      - "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI"
-      - "IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)"
-      - "echo Repository URI: $REPO_URI"
-      - "echo Image Tag: $IMAGE_TAG"
+      - echo "Logging into Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo "Repository URI: $REPO_URI"
+      - echo "Image Tag: $IMAGE_TAG"
 
   build:
     commands:
-      - "echo Building Docker image..."
-      - "docker build -t $REPO_URI:$IMAGE_TAG ."
-      - "docker tag $REPO_URI:$IMAGE_TAG $REPO_URI:latest"
+      - echo "Building Docker image..."
+      - docker build -t $REPO_URI:$IMAGE_TAG .
+      - docker tag $REPO_URI:$IMAGE_TAG $REPO_URI:latest
 
   post_build:
     commands:
-      - "echo Pushing Docker images to ECR..."
-      - "docker push $REPO_URI:$IMAGE_TAG"
-      - "docker push $REPO_URI:latest"
-      - "echo Updating kubeconfig..."
-      - "aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME"
-      - "echo Deploying to Kubernetes..."
-      - "sed -i \"s|REPLACE_IMAGE|$REPO_URI:$IMAGE_TAG|g\" $K8S_DIR/deployment.yaml"
-      - "kubectl apply -f $K8S_DIR/deployment.yaml"
-      - "kubectl apply -f $K8S_DIR/service.yaml"
-      - "kubectl rollout status deployment/brain-tasks-app"
+      - echo "Pushing Docker images to ECR..."
+      - docker push $REPO_URI:$IMAGE_TAG
+      - docker push $REPO_URI:latest
+
+      - echo "Updating kubeconfig..."
+      - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $CLUSTER_NAME
+
+      - echo "Deploying to Kubernetes..."
+      - sed -i "s|REPLACE_IMAGE|$REPO_URI:$IMAGE_TAG|g" $K8S_DIR/deployment.yaml
+      - kubectl apply -f $K8S_DIR/deployment.yaml
+      - kubectl apply -f $K8S_DIR/service.yaml
+      - kubectl rollout status deployment/brain-tasks-app
 
 artifacts:
   files:
