@@ -11,8 +11,7 @@ env:
 phases:
   install:
     commands:
-      - echo "Installing dependencies..."
-      - yum install -y awscli jq curl
+      - echo "Using pre-installed AWS CLI and curl on Amazon Linux 2023"
       - echo "Installing kubectl..."
       - curl -LO "https://dl.k8s.io/release/$(curl -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
       - chmod +x kubectl
