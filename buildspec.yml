@@ -43,6 +43,7 @@ phases:
       - kubectl apply -f $K8S_DIR/deployment.yaml
       - kubectl apply -f $K8S_DIR/service.yaml
       - kubectl rollout status deployment/brain-tasks-app
+      - kubectl get svc -o wide
 
 artifacts:
   files:
