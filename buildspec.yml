@@ -11,6 +11,10 @@ phases:
 
   pre_build:
     commands:
+      - echo "Authenticating with EKS..."
+      - aws sts get-caller-identity
+      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name brain-tasks-cluster
+      - kubectl get nodes
       - echo "Logging into Amazon ECR..."
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
