@@ -22,6 +22,10 @@ phases:
       - echo "Repository URI - $REPO_URI"
       - echo "Image Tag - $IMAGE_TAG"
 
+      - echo "=== Installing yq (for YAML patching) ==="
+      - curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/bin/yq
+      - chmod +x /usr/bin/yq
+
   build:
     commands:
       - echo "=== Building Docker Image ==="
@@ -37,8 +41,18 @@ phases:
       - echo "=== Updating kubeconfig Again (safety) ==="
       - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
 
-      - echo "=== Debugging IAM Auth ConfigMap ==="
-      - kubectl get configmap aws-auth -n kube-system -o yaml || echo "⚠️ aws-auth config not accessible"
+      - echo "=== Ensuring CodeBuild IAM Role is in aws-auth ==="
+      - CODEBUILD_ROLE_ARN=$(aws sts get-caller-identity --query Arn --output text)
+      - kubectl get configmap aws-auth -n kube-system -o yaml > /tmp/aws-auth.yaml
+      - if ! grep -q "$CODEBUILD_ROLE_ARN" /tmp/aws-auth.yaml; then
+          echo ">>> Patching aws-auth with CodeBuild role...";
+          CURRENT_MAPROLES=$(yq '.data.mapRoles' /tmp/aws-auth.yaml);
+          NEW_ENTRY="- rolearn: $CODEBUILD_ROLE_ARN\n  username: build\n  groups:\n    - system:masters";
+          PATCHED_MAPROLES=$(printf "%s\n%s" "$CURRENT_MAPROLES" "$NEW_ENTRY");
+          kubectl patch configmap aws-auth -n kube-system --type merge -p "{\"data\":{\"mapRoles\":\"$PATCHED_MAPROLES\"}}";
+        else
+          echo ">>> CodeBuild role already present in aws-auth.";
+        fi
 
       - echo "=== Deploying to Kubernetes ==="
       - sed -i "s|REPLACE_IMAGE|$REPO_URI:$IMAGE_TAG|g" $K8S_DIR/deployment.yml
