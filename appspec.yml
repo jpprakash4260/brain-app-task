@@ -7,5 +7,5 @@ Resources:
         ClusterName: brain-app-cluster
         Namespace: default
         ManifestFilePaths:
-          - k8s/deployment.yaml
-          - k8s/service.yaml
+          - k8s/deployment.yml
+          - k8s/service.yml
