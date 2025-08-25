@@ -26,6 +26,9 @@ phases:
 
   post_build:
     commands:
+      - aws sts get-caller-identity
+      - aws eks update-kubeconfig --name brain-tasks-app --region ap-south-1
+      - kubectl get nodes
       - echo "Updating kubeconfig for EKS..."
       - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
       - echo "Verifying cluster access..."
