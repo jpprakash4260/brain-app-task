@@ -10,32 +10,27 @@ env:
 phases:
   pre_build:
     commands:
-      - echo "Checking identity..."
+      - echo "Checking AWS user..."
       - aws sts get-caller-identity
-      - echo "Logging in to Amazon ECR..."
-      - aws --version
+      - echo "login to ECR"
       - REPO_URI=828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI
 
   build:
     commands:
-      - echo "Building Docker image..."
+      - echo "build docker image"
       - docker build -t $REPO_URI:$IMAGE_TAG .
-      - echo "Pushing Docker image..."
+      - echo "push docker image"
       - docker push $REPO_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - aws sts get-caller-identity
-      - aws eks update-kubeconfig --name brain-tasks-app --region ap-south-1
+      - echo "update kube config"
+      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
       - kubectl get nodes
-      - echo "Updating kubeconfig for EKS..."
-      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
-      - echo "Verifying cluster access..."
-      - kubectl get nodes
-      - echo "Updating Kubernetes manifests..."
+      - echo "replace image in deployment file"
       - sed -i "s|828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task|$REPO_URI:$IMAGE_TAG|g" $K8S_DIR/deployment.yml
-      - echo "Applying manifests..."
+      - echo "apply deployment and service"
       - kubectl apply -f $K8S_DIR/deployment.yml
       - kubectl apply -f $K8S_DIR/service.yml
-      - echo "Deployment complete!"
+      - echo "done"
