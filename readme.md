@@ -1,12 +1,12 @@
 # Brain Tasks App
 
 This project is a React application. I deployed it on **AWS EKS** using Docker and CodeBuild. The app runs on **port 3000**.
-
-Deployed url is:
-```http://a3ca5d6a0a3384d3382c2b92e2ff7005-1934411184.ap-south-1.elb.amazonaws.com:3000/```
 ---
 
 ## Steps I did
+
+Deployed url is:
+```http://a3ca5d6a0a3384d3382c2b92e2ff7005-1934411184.ap-south-1.elb.amazonaws.com:3000/```
 
 ### 1. Clone repo
 ```bash
