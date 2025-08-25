@@ -18,4 +18,4 @@ spec:
       - name: brain-tasks-app
         image: 828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task
         ports:
-        - containerPort: 80
+        - containerPort: 3000
