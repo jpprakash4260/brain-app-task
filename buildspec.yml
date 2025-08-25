@@ -10,6 +10,8 @@ env:
 phases:
   pre_build:
     commands:
+      - echo "Checking identity..."
+      - aws sts get-caller-identity
       - echo "Logging in to Amazon ECR..."
       - aws --version
       - REPO_URI=828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task
