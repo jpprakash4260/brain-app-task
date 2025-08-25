@@ -3,37 +3,34 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: ap-south-1
-    REPO_URI: 828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task
     CLUSTER_NAME: brain-tasks-app
     K8S_DIR: k8s
+    IMAGE_TAG: latest
 
 phases:
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR..."
+      - aws --version
+      - REPO_URI=828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - echo "Image tag => $IMAGE_TAG"
-      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
 
   build:
     commands:
       - echo "Building Docker image..."
       - docker build -t $REPO_URI:$IMAGE_TAG .
-      - docker tag $REPO_URI:$IMAGE_TAG $REPO_URI:latest
+      - echo "Pushing Docker image..."
+      - docker push $REPO_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo "Pushing Docker images..."
-      - docker push $REPO_URI:$IMAGE_TAG
-      - docker push $REPO_URI:latest
-
-      - echo "Deploying to Kubernetes..."
+      - echo "Updating kubeconfig for EKS..."
+      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER_NAME
+      - echo "Verifying cluster access..."
+      - kubectl get nodes
+      - echo "Updating Kubernetes manifests..."
       - sed -i "s|828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task|$REPO_URI:$IMAGE_TAG|g" $K8S_DIR/deployment.yml
+      - echo "Applying manifests..."
       - kubectl apply -f $K8S_DIR/deployment.yml
       - kubectl apply -f $K8S_DIR/service.yml
-      - kubectl rollout status deployment/brain-tasks-app
-
-artifacts:
-  files:
-    - k8s/*
+      - echo "Deployment complete!"
