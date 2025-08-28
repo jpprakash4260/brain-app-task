@@ -3,34 +3,30 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: ap-south-1
-    CLUSTER_NAME: brain-tasks-app
-    K8S_DIR: k8s
+    REPO_URI: 828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task
     IMAGE_TAG: latest
 
 phases:
   pre_build:
     commands:
-      - echo "Checking AWS user..."
+      - echo "Who am I?"
       - aws sts get-caller-identity
-      - echo "login to ECR"
-      - REPO_URI=828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task
+      - echo "Login to ECR"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI
-
   build:
     commands:
-      - echo "build docker image"
+      - echo "Build image"
       - docker build -t $REPO_URI:$IMAGE_TAG .
-      - echo "push docker image"
+      - echo "Push image"
       - docker push $REPO_URI:$IMAGE_TAG
-
   post_build:
     commands:
-      - echo "update kube config"
-      - aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_DEFAULT_REGION
-      - kubectl get nodes
-      - echo "replace image in deployment file"
-      - sed -i "s|828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task|$REPO_URI:$IMAGE_TAG|g" $K8S_DIR/deployment.yml
-      - echo "apply deployment and service"
-      - kubectl apply -f $K8S_DIR/deployment.yml
-      - kubectl apply -f $K8S_DIR/service.yml
-      - echo "done"
+      - echo "Write image metadata for deploy step"
+      - printf '{"ImageURI":"%s"}' $REPO_URI:$IMAGE_TAG > imagedefinitions.json
+
+artifacts:
+  files:
+    - appspec.yml
+    - imagedefinitions.json
+    - k8s/**/*
+    - scripts/**/*
