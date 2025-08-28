@@ -1,25 +1,18 @@
 version: 0.0
-os: linux
-
-files:
-  - source: /
-    destination: /opt/brain-tasks-app
-    overwrite: true
-
-hooks:
-  BeforeInstall:
-    - location: scripts/install_dependencies.sh
-      timeout: 300
-      runas: root
-  AfterInstall:
-    - location: scripts/configure_kube.sh
-      timeout: 300
-      runas: root
-  ApplicationStart:
-    - location: scripts/deploy_to_eks.sh
-      timeout: 600
-      runas: root
-  ValidateService:
-    - location: scripts/validate.sh
-      timeout: 300
-      runas: root
+Resources:
+  - myApp:
+      Type: AWS::EKS::Kubernetes::Namespace
+      Properties:
+        Namespace: default
+  - myDeployment:
+      Type: AWS::EKS::Kubernetes::Deployment
+      Properties:
+        Name: brain-tasks-app
+        Namespace: default
+        File: k8s/deployment.yml
+  - myService:
+      Type: AWS::EKS::Kubernetes::Service
+      Properties:
+        Name: brain-tasks-app-service
+        Namespace: default
+        File: k8s/service.yml
