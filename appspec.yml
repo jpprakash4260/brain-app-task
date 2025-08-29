@@ -1,18 +1,10 @@
 version: 0.0
-Resources:
-  - myApp:
-      Type: AWS::EKS::Kubernetes::Namespace
-      Properties:
-        Namespace: default
-  - myDeployment:
-      Type: AWS::EKS::Kubernetes::Deployment
-      Properties:
-        Name: brain-tasks-app
-        Namespace: default
-        File: k8s/deployment.yml
-  - myService:
-      Type: AWS::EKS::Kubernetes::Service
-      Properties:
-        Name: brain-tasks-app-service
-        Namespace: default
-        File: k8s/service.yml
+resources:
+  - name: "KubernetesDeployment"
+    type: "AWS::EKS::Deployment"
+    properties:
+      clusterName: brain-tasks-app
+      namespace: default
+      manifestFilePaths:
+        - "k8s/deployment.yml"
+        - "k8s/service.yml"
