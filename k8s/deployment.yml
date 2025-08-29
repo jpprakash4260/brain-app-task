@@ -18,11 +18,11 @@ spec:
         - name: brain-tasks-app
           image: 828171332440.dkr.ecr.ap-south-1.amazonaws.com/mini-project/brain-app-task:latest
           ports:
-            - containerPort: 80
+            - containerPort: 3000
           readinessProbe:
             httpGet:
               path: /
-              port: 80
+              port: 3000
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -30,7 +30,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: 80
+              port: 3000
             initialDelaySeconds: 60
             periodSeconds: 15
             timeoutSeconds: 5
