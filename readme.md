@@ -7,7 +7,7 @@ This project is a React application. I deployed it on **AWS EKS** using Docker a
 
 Deployed url is:
 ```bash
-http://a3ca5d6a0a3384d3382c2b92e2ff7005-1934411184.ap-south-1.elb.amazonaws.com:3000/
+http://afca609291d294a409830355e4257f7c-891875064.ap-south-1.elb.amazonaws.com:3000/
 ```
 
 ### 1. Clone repo
@@ -41,10 +41,10 @@ kubectl apply -f k8s/service.yml
 - Wrote buildspec.yml to build Docker, push to ECR, and deploy to EKS
 
 ### 5. CodeDeploy
-- Created CodeDeploy application
-- Added appspec.yml for deploying Docker images to EKS
+- Deployed Via Code Deploy with Direct Aws EKS
+- Added build Artifacts and apply
 
-### 6. CodeDeploy 
+### 6. CodeDeploy Commands
 ```bash
 kubectl apply -f k8s/deployment.yml
 kubectl apply -f k8s/service.yml
